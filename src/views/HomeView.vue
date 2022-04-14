@@ -13,12 +13,12 @@
       <p class="text-sm text-primary text-left">5 Packages ready to be delivered.</p>
     </div>
     <div class="w-screen h-screen p-5 bg-platinum absolute top-56 rounded-t-3xl shadow-2xl shadow-primary ">
-      <router-link to="/about" class="text-white flex gap-5 items-center justify-center p-4 px-6 max-w-sm bg-primary rounded-2xl border border-gray-200 shadow-md">
+      <router-link to="/journey" class="text-white flex gap-5 items-center justify-center p-4 px-6 max-w-sm bg-primary rounded-2xl border border-gray-200 shadow-md">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" viewBox="0 0 20 20" fill="currentColor">
           <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
           <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1v-5a1 1 0 00-.293-.707l-2-2A1 1 0 0015 7h-1z" />
         </svg>
-        <h5 class="text-centermb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">Start today's journey.</h5>
+        <h5 class="text-centermb-2 text-xl font-bold tracking-tight">Start today's journey.</h5>
       </router-link>
       <div class="py-4">
         <div class="flex justify-between items-end text-primary">

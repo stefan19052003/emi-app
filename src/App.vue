@@ -1,17 +1,18 @@
 <template>
   <router-view/>
-  <Footer/>
+  <Footer class="z-50 border-t-2 border-primary"/>
 </template>
 
 <script>
 // @ is an alias to /src
 import Footer from '@/components/Footer.vue'
 
+
 export default {
   name: 'App',
   components: {
     Footer
-  }
+  },
 }
 </script>
 
