@@ -35,13 +35,13 @@
             <hr class="mb-6">
             <div class="ml-4">
                 <ol class="border-l border-primary text-left text-primary">                  
-                    <li v-for="route, index in routes" :key="route" :class="{'bg-yellow-100': index == this.currentRouteIndex, 'bg-green-100': index <= this.currentRouteIndex }" class="p-8">            
+                    <li v-for="route, index in this.cRoute" :key="route" :class="{'bg-yellow-100': index == this.currentRouteIndex, 'bg-green-100': index < this.currentRouteIndex }" class="p-8">            
                         <div class="flex">
                             <span class="mr-3 flex absolute left-[1.5rem] justify-center items-center w-6 h-6 bg-white rounded-full ring-2 ring-primary">
                                 <svg class="w-3 h-3 text-primary" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path></svg>
                             </span>
-                            <h3 v-if="index == 0" class="mb-4 text-base font-semibold text-primary"> FROM {{route.toUpperCase()}}</h3>
-                            <h3 v-else class="mb-4 text-base font-semibold text-primary"> SHIPMENT TO {{route.toUpperCase()}}</h3>
+                            <h3 v-if="index == 0" class="mb-4 text-base font-semibold text-primary"> FROM {{route.shop_name.toUpperCase()}}</h3>
+                            <h3 v-else class="mb-4 text-base font-semibold text-primary"> SHIPMENT TO {{route.shop_name.toUpperCase()}}</h3>
                         </div>
                         <p class="text-xs font-normal =">Get access to over 20+ pages including a dashboard layout, charts, kanban board, calendar, and pre-order E-commerce & Marketing pages.</p>
                     </li>
@@ -57,7 +57,6 @@
     import mapboxgl from "mapbox-gl";
     import "mapbox-gl/dist/mapbox-gl.css";
     import * as turf from '@turf/turf'
-    import MapboxDirections from '@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions'
     import axios from 'axios'
 
     export default {
@@ -66,6 +65,7 @@
             return {
             routes: ['Warehouse', 'Shop_27', 'Shop_1', 'Shop_10', 'Shop_46', 'Shop_41'],
             accessToken: "pk.eyJ1Ijoic3RlZmFucmFmYWVsIiwiYSI6ImNsMWV2MG1vdTA2YXkzZG54dXBpZGJtd3IifQ.dFkQvD8fs51PMPrFOvaKKg",
+            driverIndex: 3,
             coordinatesList: [],
             routeList:[],
             currentLocation: [],
@@ -81,9 +81,20 @@
             currentRouteIndex: 1,
             done: false,
             overallReport: [],
+            waypoints: [],
+            cRoute: '',
             };
         },
         methods: {
+            async getRoutes(){
+                const url = "http://localhost:8000"
+                await axios.get(`${url}/emy/routes`)
+                .then(response => this.waypoints = response.data.data[0])
+                .catch(err => console.log(err))
+
+                console.log(this.waypoints)
+                return this.waypoints
+            },
             start() {
                 if(this.running) return;
   
@@ -167,8 +178,8 @@
                 this.routeList.push(this.coordinatesList)
 
                 var shipmentReport =  {
-                    'orig_store': this.routes[this.currentRouteIndex-1],
-                    'dest_store': this.routes[this.currentRouteIndex],
+                    'orig_store': this.cRoute[this.currentRouteIndex-1],
+                    'dest_store': this.cRoute[this.currentRouteIndex],
                     'dist_km': this.calculateDistance(this.coordinatesList)
                 }
 
@@ -188,8 +199,11 @@
                 console.log(this.routeList)
             }
         },
+        async created() {
+
+        },
         async mounted() {
-            this.currentRoute = this.routes[this.currentRouteIndex]
+            this.waypoints = await this.getRoutes()
             this.currentLocation = await this.currentPos()
             mapboxgl.accessToken = this.accessToken
 
@@ -212,11 +226,24 @@
 
             const nav = new mapboxgl.NavigationControl();
             map.addControl(nav, "top-right");
-
-            const start = [114.1243497, 22.34614181]
-            const end = [114.1538679, 22.2487869]
-
-            const query = await axios.get('https://api.mapbox.com/directions/v5/mapbox/driving/114.1724%2C22.3367%3B114.2068%2C22.4196?geometries=geojson&language=en&overview=full&access_token=pk.eyJ1Ijoic3RlZmFucmFmYWVsIiwiYSI6ImNsMWV2MG1vdTA2YXkzZG54dXBpZGJtd3IifQ.dFkQvD8fs51PMPrFOvaKKg')
+            
+            var wp = ''
+            this.waypoints.routes[this.driverIndex].map((r, idx) => {
+                if(idx == this.waypoints.routes[this.driverIndex].length - 1){
+                    wp += `${r.long},${r.lat}`
+                } else {
+                    wp += `${r.long},${r.lat};`
+                }
+                const marker = new mapboxgl.Marker({
+                color: '#063E3F',
+                scale: 0.85
+                })
+                .setLngLat([r.long,r.lat])
+                .addTo(map);
+            })
+            var url = `https://api.mapbox.com/directions/v5/mapbox/driving/${wp}?alternatives=true&annotations=duration%2Cdistance&geometries=geojson&language=en&overview=full&steps=true&access_token=${mapboxgl.accessToken}`
+            console.log(url)
+            const query = await axios.get(url)
             
             
             const json = await query.data;
@@ -258,6 +285,10 @@
                 })
                 
             }
+            
+            this.cRoute = this.waypoints.routes[this.driverIndex]
+            this.currentRoute = this.cRoute[this.currentRouteIndex].shop_name
+            console.log(this.cRoute)
         },
         watch: {
             currentLocation(oval, nval) {
@@ -272,16 +303,13 @@
                 }
             },
             currentRouteIndex(oval, nval) {
-                this.currentRoute = this.routes[this.currentRouteIndex]
-                
-                if (this.currentRouteIndex == (this.routes.length-1)) {
+                if (this.currentRouteIndex > this.cRoute.length-1) {
                     this.done = true
-                    this.currentRouteIndex++
-                    console.log(this.overallReport)
+                    this.currentRoute = ''
+                } else {
+                    this.currentRoute = this.cRoute[this.currentRouteIndex].shop_name
                 }
-
             }
-
         },
     };
 </script>
