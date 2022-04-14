@@ -63,7 +63,7 @@
         name: "JourneyView",
         data() {
             return {
-            routes: ['Warehouse', 'Shop_27', 'Shop_1', 'Shop_10', 'Shop_46', 'Shop_41'],
+            // routes: ['Warehouse', 'Shop_27', 'Shop_1', 'Shop_10', 'Shop_46', 'Shop_41'],
             accessToken: "pk.eyJ1Ijoic3RlZmFucmFmYWVsIiwiYSI6ImNsMWV2MG1vdTA2YXkzZG54dXBpZGJtd3IifQ.dFkQvD8fs51PMPrFOvaKKg",
             driverIndex: 3,
             coordinatesList: [],
