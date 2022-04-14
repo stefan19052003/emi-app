@@ -213,7 +213,51 @@
             const nav = new mapboxgl.NavigationControl();
             map.addControl(nav, "top-right");
 
+            const start = [114.1243497, 22.34614181]
+            const end = [114.1538679, 22.2487869]
+
+            const query = await axios.get('https://api.mapbox.com/directions/v5/mapbox/driving/114.1724%2C22.3367%3B114.2068%2C22.4196?geometries=geojson&language=en&overview=full&access_token=pk.eyJ1Ijoic3RlZmFucmFmYWVsIiwiYSI6ImNsMWV2MG1vdTA2YXkzZG54dXBpZGJtd3IifQ.dFkQvD8fs51PMPrFOvaKKg')
             
+            
+            const json = await query.data;
+            const data = json.routes[0];
+            const route = data.geometry.coordinates;
+
+            const geojson = {
+                type: 'Feature',
+                properties: {},
+                geometry: {
+                type: 'LineString',
+                coordinates: route
+                }
+            };
+
+            if (map.getSource('route')) {
+                map.getSource('route').setData(geojson);
+            }
+            // otherwise, we'll make a new request
+            else {
+                map.on('load', () => {
+                    map.addLayer({
+                        id: 'route',
+                        type: 'line',
+                        source: {
+                            type: 'geojson',
+                            data: geojson
+                        },
+                        layout: {
+                            'line-join': 'round',
+                            'line-cap': 'round'
+                        },
+                        paint: {
+                            'line-color': '#063E3F',
+                            'line-width': 5,
+                            'line-opacity': 0.75
+                        }
+                        });
+                })
+                
+            }
         },
         watch: {
             currentLocation(oval, nval) {
